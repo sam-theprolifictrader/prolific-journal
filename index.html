@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prolific Trading Journal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-white text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center px-6 py-4 border-b">
+    <div class="text-2xl font-bold">Prolific Journal</div>
+    <button onclick="signIn()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+      Login with Google
+    </button>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center px-8 py-20 max-w-6xl mx-auto">
+    <div class="space-y-4">
+      <h1 class="text-4xl font-bold leading-tight">Your Trading Journal, <span class="text-blue-600">Simplified</span></h1>
+      <p class="text-lg text-gray-600">
+        Log trades, track performance, and analyze your strategy in one clean dashboard.
+      </p>
+      <button onclick="signIn()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded text-lg">
+        Sign In to Get Started
+      </button>
+    </div>
+
+    <!-- Right: Actual screenshot preview -->
+    <div>
+      <img src="journal-preview.png" alt="Prolific Trading Journal UI" class="rounded-xl shadow-xl border">
+    </div>
+  </section>
+
+  <script>
+    function signIn() {
+      window.location.href = 'journal.html';
+    }
+  </script>
+</body>
+</html>

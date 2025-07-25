@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Prolific Trading Journal</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Firebase v8 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+  <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+    <h1 class="text-2xl font-bold mb-4">Prolific Trading Journal</h1>
+    <p class="text-gray-600 mb-6">Please sign in with Google to continue</p>
+    <button id="loginBtn" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded">
+      Sign in with Google
+    </button>
+  </div>
+
+  <script>
+    // ✅ Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCWSfQEur2gxgvg1HiyFNB0zvtI3orDPOM",
+      authDomain: "journal-data-save.firebaseapp.com",
+      projectId: "journal-data-save",
+      storageBucket: "journal-data-save.firebasestorage.app",
+      messagingSenderId: "699035263314",
+      appId: "1:699035263314:web:411f111cbaeb618a0dda8b"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    // ✅ Login button
+    document.getElementById("loginBtn").addEventListener("click", () => {
+      auth.signInWithPopup(provider)
+        .then(() => {
+          // ✅ Redirect to journal page after login
+          window.location.href = "journal.html";
+        })
+        .catch(err => alert("Login failed: " + err.message));
+    });
+  </script>
+</body>
+</html>

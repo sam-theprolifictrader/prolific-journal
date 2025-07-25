@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prolific Trading Journal (Cloud Sync)</title>
+  <!-- Tailwind for clean login UI -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+
+  <style>
+    body { font-family: Arial, sans-serif; }
+  </style>
+</head>
+<body class="bg-gray-100">
+
+  <!-- ✅ Login Panel -->
+  <div class="bg-white shadow p-4 flex justify-between items-center">
+    <h1 class="text-xl font-bold">Prolific Trading Journal</h1>
+    <div>
+      <span id="userStatus" class="mr-4 text-gray-700">Not logged in</span>
+      <button id="loginBtn" class="px-4 py-2 bg-blue-600 text-white rounded">Sign in with Google</button>
+      <button id="logoutBtn" class="px-4 py-2 bg-gray-600 text-white rounded hidden">Logout</button>
+    </div>
+  </div>
+
+  <!-- ✅ Your full journal UI remains below -->
+  <!-- Existing HTML content for dashboard/trade logging goes here -->
+
+  <!-- ✅ Firebase Login + Cloud Sync Logic -->
+  <script>
+    window.addEventListener('load', () => {
+      // Initialize Firebase after scripts load
+      const firebaseConfig = {
+        apiKey: "AIzaSyCWSfQEur2gxgvg1HiyFNB0zvtI3orDPOM",
+        authDomain: "journal-data-save.firebaseapp.com",
+        projectId: "journal-data-save",
+        storageBucket: "journal-data-save.firebasestorage.app",
+        messagingSenderId: "699035263314",
+        appId: "1:699035263314:web:411f111cbaeb618a0dda8b"
+      };
+
+      const app = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+
+      const provider = new firebase.auth.GoogleAuthProvider();
+
+      const loginBtn = document.getElementById("loginBtn");
+      const logoutBtn = document.getElementById("logoutBtn");
+      const userStatus = document.getElementById("userStatus");
+
+      let currentUserId = null;
+
+      loginBtn.addEventListener("click", () => {
+        auth.signInWithPopup(provider).catch(err => alert("Login failed: " + err.message));
+      });
+
+      logoutBtn.addEventListener("click", () => {
+        auth.signOut();
+      });
+
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          userStatus.textContent = `Logged in as ${user.displayName}`;
+          loginBtn.classList.add("hidden");
+          logoutBtn.classList.remove("hidden");
+          currentUserId = user.uid;
+          loadCloudTrades();
+        } else {
+          userStatus.textContent = "Not logged in";
+          loginBtn.classList.remove("hidden");
+          logoutBtn.classList.add("hidden");
+          currentUserId = null;
+          loadLocalTrades();
+        }
+      });
+
+      // ✅ Replace your existing saveTrades with dual sync
+      async function saveTrades(trades) {
+        // Always save locally
+        localStorage.setItem('trades', JSON.stringify(trades));
+
+        // If logged in, also save to Firestore
+        if (currentUserId) {
+          await db.collection("journals").doc(currentUserId).set({
+            trades: trades,
+            updated: new Date()
+          });
+        }
+      }
+
+      // ✅ Load local fallback
+      function loadLocalTrades() {
+        const local = localStorage.getItem('trades');
+        if (local) {
+          const trades = JSON.parse(local);
+          renderTrades(trades);
+        }
+      }
+
+      // ✅ Load from Firestore if logged in
+      async function loadCloudTrades() {
+        if (!currentUserId) return;
+        const docSnap = await db.collection("journals").doc(currentUserId).get();
+        if (docSnap.exists) {
+          const trades = docSnap.data().trades || [];
+          // also cache locally
+          localStorage.setItem('trades', JSON.stringify(trades));
+          renderTrades(trades);
+        } else {
+          // no cloud data, fallback to local
+          loadLocalTrades();
+        }
+      }
+
+      // ✅ Hook into your existing UI update/render
+      function renderTrades(trades) {
+        // TODO: Call your existing code that updates the journal dashboard
+        console.log("Rendering trades", trades);
+      }
+
+      // ✅ When user adds/edits a trade, call saveTrades(newTradesArray)
+    });
+  </script>
+</body>
+</html>

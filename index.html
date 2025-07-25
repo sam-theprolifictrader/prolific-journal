@@ -60,8 +60,41 @@
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
     </style>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>
+
+<script>
+  //  Your actual Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyCWSfQEur2gxgvg1HiyFNB0zvtI3orDPOM",
+    authDomain: "journal-data-save.firebaseapp.com",
+    projectId: "journal-data-save",
+    storageBucket: "journal-data-save.firebasestorage.app",
+    messagingSenderId: "699035263314",
+    appId: "1:699035263314:web:411f111cbaeb618a0dda8b",
+    measurementId: "G-CTLPKP15NP"
+  };
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();        // for login
+  const db = firebase.firestore();     // for saving journal
+</script>
 </head>
 <body class="bg-gray-100">
+
+<!--  LOGIN AREA -->
+<div id="authSection">
+  <button id="loginBtn">Sign in with Google</button>
+  <button id="logoutBtn" style="display:none;">Logout</button>
+  <p id="userStatus">Not logged in</p>
+</div>
+
+<!--  JOURNAL TEXT AREA -->
+<textarea id="journalTextArea" placeholder="Write your journal here..."></textarea>
+
 
     <div class="container mx-auto p-4 md:p-6 lg:p-8">
         <!-- Header -->
@@ -887,5 +920,65 @@
             refreshUI();
         });
     </script>
+<script>
+  // ✅ Google login provider
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  // ✅ Login button click
+  document.getElementById("loginBtn").addEventListener("click", () => {
+    auth.signInWithPopup(provider);
+  });
+
+  // ✅ Logout button click
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    auth.signOut();
+  });
+
+  // ✅ Watch login state
+  auth.onAuthStateChanged((user) => {
+    if (user) {
+      document.getElementById("userStatus").innerText = `Logged in as ${user.displayName}`;
+      document.getElementById("loginBtn").style.display = "none";
+      document.getElementById("logoutBtn").style.display = "inline";
+
+      // ✅ Load saved journal for this user
+      loadJournal(user.uid);
+
+    } else {
+      document.getElementById("userStatus").innerText = "Not logged in";
+      document.getElementById("loginBtn").style.display = "inline";
+      document.getElementById("logoutBtn").style.display = "none";
+      document.getElementById("journalTextArea").value = "";
+    }
+  });
+
+  // ✅ Save journal entry to Firestore
+  async function saveJournal(uid, text) {
+    await db.collection("journals").doc(uid).set({
+      content: text,
+      updated: new Date()
+    });
+  }
+
+  // ✅ Load journal entry from Firestore
+  async function loadJournal(uid) {
+    const doc = await db.collection("journals").doc(uid).get();
+    if (doc.exists) {
+      const data = doc.data();
+      document.getElementById("journalTextArea").value = data.content;
+    } else {
+      document.getElementById("journalTextArea").value = "";
+    }
+  }
+
+  // ✅ Auto-save whenever typing
+  document.getElementById("journalTextArea").addEventListener("input", () => {
+    const user = auth.currentUser;
+    if (user) {
+      saveJournal(user.uid, document.getElementById("journalTextArea").value);
+    }
+  });
+</script>
+
 </body>
 </html>
